@@ -1,0 +1,10 @@
+{
+  "domain": "kontomierz_sensor",
+  "name": "kontomierz Sensor",
+  "documentation": "https://github.com/pawel.hulek",
+  "dependencies": [],
+  "codeowners": [],
+  "requirements": [],
+  "iot_class": "local_polling",
+  "version": "0.0.1"
+}
