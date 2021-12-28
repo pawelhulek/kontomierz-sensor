@@ -1,15 +1,14 @@
 """Platform for sensor integration."""
 from __future__ import annotations
-import voluptuous as vol
-import homeassistant.helpers.config_validation as cv
 
+import homeassistant.helpers.config_validation as cv
+import requests
+import voluptuous as vol
 from homeassistant.components.sensor import SensorEntity, PLATFORM_SCHEMA
 from homeassistant.const import CONF_USERNAME, CONF_PASSWORD, CONF_API_TOKEN
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
-import json
-import requests
 from requests.auth import HTTPBasicAuth
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
@@ -26,24 +25,36 @@ def setup_platform(
         discovery_info: DiscoveryInfoType | None = None
 ) -> None:
     """Set up the sensor platform."""
-    add_entities([KontomierzSensor()])
+    url = "https://secure.kontomierz.pl/k4/user_accounts.json?api_key=" +  config.get(CONF_API_TOKEN)
+    payload = {}
+    headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+    }
+    response = requests.get(url, auth=HTTPBasicAuth(config.get(CONF_USERNAME), config.get(CONF_PASSWORD)), headers=headers, data=payload)
+    response_json = response.json()
+    for x in response_json:
+        account = x.get('user_account')
+        add_entities(
+            [KontomierzSensor(hass, config, account.get('bank_name') + " - " + account.get('display_name'),
+                              account.get('iban'))])
 
 
 class KontomierzSensor(SensorEntity):
     """Representation of a Sensor."""
 
-    def __init__(self, hass, config: dict):
-        """Initialize the sensor."""
+    def __init__(self, hass, config: dict, entity_name: string, iban: string) -> None:
         self._state = None
         self.hass = hass
         self.username = config.get(CONF_USERNAME)
         self.password = config.get(CONF_PASSWORD)
         self.apiToken = config.get(CONF_API_TOKEN)
+        self.entity_name = entity_name
+        self.iban = iban
 
     @property
     def name(self) -> str:
-        """Return the name of the sensor."""
-        return 'Example Temperature'
+        return self.entity_name
 
     @property
     def state(self):
@@ -53,6 +64,8 @@ class KontomierzSensor(SensorEntity):
     def update(self) -> None:
         """Fetch new state data for the sensor.
         This is the only method that should fetch new data for Home Assistant.
+        {{ states('input_text.currently_watching') == "" }}
+        {{ states.sensor.alarm_keypad.attributes.alarm }}
         """
 
         url = "https://secure.kontomierz.pl/k4/user_accounts.json?api_key=" + self.apiToken
@@ -63,5 +76,11 @@ class KontomierzSensor(SensorEntity):
             'Accept': 'application/json',
         }
         response = requests.get(url, auth=HTTPBasicAuth(self.username, self.password), headers=headers, data=payload)
+        response_json = response.json()
+        result = 0.0
+        for x in response_json:
+            user_account = x.get('user_account')
+            if self.iban == user_account.get('iban'):
+                result += float(user_account.get('balance'))
 
-        self._state = response.json()[0].get('user_account').get('balance')
+        self._state = result
