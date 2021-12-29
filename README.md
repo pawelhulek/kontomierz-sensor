@@ -1,4 +1,6 @@
-# kontomierz-sensor
+# Home assistant integration with kontomiarz https://kontomierz.pl/
+
+
 Sample configuration
 
 ```yaml
