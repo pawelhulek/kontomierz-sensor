@@ -4,7 +4,7 @@ from __future__ import annotations
 import homeassistant.helpers.config_validation as cv
 import requests
 import voluptuous as vol
-from homeassistant.components.sensor import SensorEntity, PLATFORM_SCHEMA
+from homeassistant.components.sensor import SensorEntity, PLATFORM_SCHEMA, SensorStateClass, SensorDeviceClass
 from homeassistant.const import CONF_USERNAME, CONF_PASSWORD, CONF_API_TOKEN
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -25,13 +25,14 @@ def setup_platform(
         discovery_info: DiscoveryInfoType | None = None
 ) -> None:
     """Set up the sensor platform."""
-    url = "https://secure.kontomierz.pl/k4/user_accounts.json?api_key=" +  config.get(CONF_API_TOKEN)
+    url = "https://secure.kontomierz.pl/k4/user_accounts.json?api_key=" + config.get(CONF_API_TOKEN)
     payload = {}
     headers = {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
     }
-    response = requests.get(url, auth=HTTPBasicAuth(config.get(CONF_USERNAME), config.get(CONF_PASSWORD)), headers=headers, data=payload)
+    response = requests.get(url, auth=HTTPBasicAuth(config.get(CONF_USERNAME), config.get(CONF_PASSWORD)),
+                            headers=headers, data=payload)
     response_json = response.json()
     for x in response_json:
         account = x.get('user_account')
@@ -44,6 +45,8 @@ class KontomierzSensor(SensorEntity):
     """Representation of a Sensor."""
 
     def __init__(self, hass, config: dict, entity_name: string, iban: string) -> None:
+        self._attr_device_class = SensorDeviceClass.MONETARY
+        self._attr_state_class = SensorStateClass.MEASUREMENT
         self._state = None
         self.hass = hass
         self.username = config.get(CONF_USERNAME)
@@ -64,23 +67,20 @@ class KontomierzSensor(SensorEntity):
     def update(self) -> None:
         """Fetch new state data for the sensor.
         This is the only method that should fetch new data for Home Assistant.
-        {{ states('input_text.currently_watching') == "" }}
-        {{ states.sensor.alarm_keypad.attributes.alarm }}
         """
 
         url = "https://secure.kontomierz.pl/k4/user_accounts.json?api_key=" + self.apiToken
 
-        payload = {}
-        headers = {
+        response = requests.get(url, auth=HTTPBasicAuth(self.username, self.password), headers={
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-        }
-        response = requests.get(url, auth=HTTPBasicAuth(self.username, self.password), headers=headers, data=payload)
+        }, data={})
         response_json = response.json()
         result = 0.0
         for x in response_json:
             user_account = x.get('user_account')
             if self.iban == user_account.get('iban'):
-                result += float(user_account.get('balance'))
+                result = float(user_account.get('balance'))
+                self._attr_native_unit_of_measurement = user_account.get('currency_name')
 
         self._state = result
