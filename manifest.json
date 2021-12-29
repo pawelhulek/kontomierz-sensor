@@ -1,6 +1,7 @@
 {
   "domain": "kontomierz_sensor",
   "name": "kontomierz Sensor",
+  "config_flow": true,
   "documentation": "https://github.com/pawel.hulek/kontomierz-sensor",
   "dependencies": [],
   "codeowners": [],

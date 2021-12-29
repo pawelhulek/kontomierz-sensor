@@ -1,0 +1,23 @@
+{
+	"config": {
+		"title": "Kontomierz",
+		"step": {
+			"user": {
+				"title": "Connect to your account",
+				"data": {
+					"username": "Kontomierz username",
+					"password": "Kontomierz password",
+					"apiToken": "API token"
+				}
+			}
+		},
+		"error": {
+			"cannot_connect": "Failed to connect, please try again",
+			"invalid_auth": "Invalid authentication",
+			"unknown": "Unexpected error"
+		},
+		"abort": {
+			"already_configured": "Kontomierz is already configured"
+		}
+	}
+}
