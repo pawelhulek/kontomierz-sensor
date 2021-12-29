@@ -1,4 +1,5 @@
-# Home assistant integration with kontomiarz https://kontomierz.pl/
+# Home assistant integration with kontomierz https://kontomierz.pl/
+
 
 
 Sample configuration
