@@ -1,7 +1,6 @@
 # Home assistant integration with kontomierz https://kontomierz.pl/
 
 
-
 Sample configuration
 
 ```yaml

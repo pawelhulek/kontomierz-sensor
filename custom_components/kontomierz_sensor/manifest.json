@@ -1,0 +1,11 @@
+{
+  "domain": "kontomierz_sensor",
+  "name": "Kontomierz Sensor",
+  "documentation": "https://github.com/pawelhulek/kontomierz-sensor",
+  "issue_tracker": "https://github.com/pawelhulek/kontomierz-sensor/issues",
+  "dependencies": [],
+  "codeowners": [],
+  "requirements": [],
+  "iot_class": "local_polling",
+  "version": "0.0.1"
+}
