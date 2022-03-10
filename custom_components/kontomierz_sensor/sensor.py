@@ -56,6 +56,10 @@ class KontomierzSensor(SensorEntity):
         self.iban = iban
 
     @property
+    def unique_id(self) -> str | None:
+        return "kontomierz_sensor" + self.entity_name
+
+    @property
     def name(self) -> str:
         return self.entity_name
 
